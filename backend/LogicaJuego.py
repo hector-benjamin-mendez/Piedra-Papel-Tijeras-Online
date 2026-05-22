@@ -1,4 +1,5 @@
 class LogicaJuego:
+    
     @staticmethod
     def determinarGanador(jugada1,jugada2):
         if jugada1 == jugada2:
