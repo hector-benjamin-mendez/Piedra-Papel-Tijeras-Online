@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piedra - Papel - Tijeras:Online</title>
+    <link rel="stylesheet" href="/client/styles.css">
+</head>
+<body>
+    <div class="background"></div>
+    <div class="contenedorTitulo">
+        <img src="/client/assets/titulo.png" class="tituloImagen">
+    </div>
+    <main class="contenedor">
+    <div class="menu" id="pantallaLogin">
+        <form id="formNombre" onsubmit="enviarNombre(event)">
+            <input type="text" id="nombre" name="nombre" placeholder="Ingresa tu nombre...">
+            <button type="submit">Conectarse</button>
+        </form>
+    </div>
+    <div id="pantallaMenu" class = "menu" style="display: none;">
+
+        <h2 id="bienvenida"></h2>
+    
+        <button onclick="buscarAleatoria()" id="btnBuscarAleatorio">
+            Jugar Aleatoriamente
+        </button>
+    
+        <button onclick="jugarConAmigo()" id="btnCrearConAmigo">
+            Jugar con un Amigo
+        </button>
+    
+    </div>
+</main>  
+</body>
+<script>
+    let nombre;
+    function buscarAleatoria(){
+        
+    }    
+    function verificarInput(nombre){
+        if(nombre.trim() === ''){
+            return false;
+        } else{
+            return true;
+        }
+
+    }
+    function enviarNombre(event){
+        nombre = document.getElementById("nombre").value;
+        var hayNombre = verificarInput(nombre);
+        if(hayNombre){
+            const ws = new WebSocket("ws://127.0.0.1:8000/ws");
+            ws.onopen = function(){
+                console.log("Conectado al servidor")
+                ws.send(JSON.stringify({
+                nombre : nombre
+            }));
+            mostrarMenu(nombre);
+            };
+
+        } else{
+            alert("Ingrese nombre para poder jugar.")
+            console.log("No hay nombre ingresado.");
+        }
+
+        event.preventDefault();
+        
+    }
+    function mostrarMenu(nombre){
+        document.getElementById("pantallaLogin").style.display = "none";
+        document.getElementById("pantallaMenu").style.display = "flex";
+        document.getElementById("menu").style.display = ''
+        document.getElementById("bienvenida").innerText = `Bienvenido ${nombre}`;
+    }
+
+
+
+</script>
+</html>
