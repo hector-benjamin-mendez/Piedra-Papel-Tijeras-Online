@@ -17,11 +17,11 @@ class Sala:
         else:
             self.estado = "esperando"
 
-    def ingresarJugador(self,Jugador):
+    def ingresarJugador(self,Cliente):
         if self.Jugador1 == None:
-            self.Jugador1 = Jugador
+            self.Jugador1 = Cliente
         else:
-            self.Jugador2 = Jugador
+            self.Jugador2 = Cliente
 
     def jugar(self):
         if self.eleccionJug1 != None and self.eleccionJug2 != None:

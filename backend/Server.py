@@ -22,8 +22,6 @@ async def websocketEndpoint(ws : WebSocket):
     await ws.accept()
     print("Cliente conectado")
     data = await ws.receive_json()
-    print(data)
-    
     nombre = data["nombre"]
     jugador = Jugador(nombre)
     cliente = Cliente(ws,jugador)
@@ -32,64 +30,21 @@ async def websocketEndpoint(ws : WebSocket):
     print(f"Bienvenido {nombre}")
     
     while True:
-        await ws.receive_json()
+        data = await ws.receive_json()
 
-@app.post("/buscar-partida")
-def buscarPartida(nombre: str):
-    jugador = conectados[Cliente(nombre)]
+        tipo = data["tipo"]
 
-    emparejamiento.agregarJugador(jugador)
+        if tipo == "buscar_partida":
+            jugador = Jugador(data["nombre"])
+            cliente = Cliente(ws,jugador)
+            emparejamiento.agregarJugador(cliente)
+            sala = emparejamiento.buscarPartida()
 
-    sala = emparejamiento.buscarPartida()
-
-    if sala:
-        administrarSalas.salas[sala] = sala
-        print(f"Sala creada\nRoom: {sala.codigo}\nJugador 1: {sala.Jugador1.nombre}\nJugador 2: {sala.Jugador2.nombre}")
-        return {
-            "mensaje" : "Sala creada",
-            "room" : sala.codigo,
-            "jugador1" : sala.Jugador1.nombre,
-            "jugador2" : sala.Jugador2.nombre
-
-        }
-
-    else:
-        print(f"Esperando jugador...")
-        return {
-            "mensaje" : "esperando jugador..."
-        }    
-    
-@app.post("/crear-partida")
-def crearPartida(nombre : str):
-    jugador = conectados[Cliente(nombre)]
-
-
-@app.post("/jugar")
-def jugar(codigoSala : str, jugador: str,jugada : str):
-    sala = administrarSalas.salas.get(codigoSala)
-
-    if not sala:
-        return {
-            "error" : "sala no encontrada. "
-        }
-
-    if sala.Jugador1.nombre == jugador:
-        sala.eleccionJug1 = jugada
-    elif sala.Jugador2.nombre == jugador:
-        sala.eleccionJug2 = jugada
-    else:
-        return {
-            "error" : "jugador no encontrado."
-        }
-    resultado = sala.jugar()
-
-    if resultado is None:
-        return{
-            "mensaje": "esperando al otro jugador..."
-        }
-
-    return {
-        "ganador" : resultado,
-        "jugada 1" : sala.eleccionJug1,
-        "jugada 2" : sala.eleccionJug2
-    }
+            if sala:
+                administrarSalas.salas[sala] = sala
+                print(f"Sala creada \n room: {sala.codigo} \njugador 1: {sala.Jugador1.jugador.nombre}\njugador 2: {sala.Jugador2.jugador.nombre}") 
+                await sala.Jugador1.ws.send_json({"mensaje" : "¡Rival encontrado!"})
+                await sala.Jugador2.ws.send_json({"mensaje":"¡Rival encontrado!"})
+            else:
+                print(f"{jugador.nombre} está buscando un adversario...")
+                await ws.send_json({"mensaje" : "Buscando un rival..."})
